@@ -119,7 +119,7 @@
 							Height="90"
                             Width="750">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="90"/>
                             </Grid.ColumnDefinitions>
