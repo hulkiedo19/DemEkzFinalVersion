@@ -4,18 +4,64 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FinalVersion.Views"
-        xmlns:vm="clr-namespace:FinalVersion.ViewModels"
         mc:Ignorable="d"
         Title="ProductsLayout" 
         Height="525" 
         Width="800">
+    <Window.Resources>
+        <Style 
+            x:Key="MyWaterMarkStyle" 
+            TargetType="{x:Type TextBox}">
+            <Setter 
+                Property="Template">
+                <Setter.Value>
+                    <ControlTemplate 
+                        TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <Border 
+                                Background="White" 
+                                BorderBrush="#FF7D8683" 
+                                BorderThickness="1"/>
+                            <ScrollViewer 
+                                x:Name="PART_ContentHost" 
+                                Margin="5,0,0,0" 
+                                VerticalAlignment="Center" />
+                            <Label 
+                                Margin="5,0,0,0" 
+                                x:Name="WaterMarkLabel" 
+                                Content="{TemplateBinding Tag}" 
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed" 
+                                Foreground="Black" 
+                                FontFamily="Arial"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition 
+                                        Property="Text" 
+                                        Value=""/>
+                                </MultiTrigger.Conditions>
+                                <Setter 
+                                    Property="Visibility" 
+                                    TargetName="WaterMarkLabel" 
+                                    Value="Visible"/>
+                            </MultiTrigger>
+                            <Trigger 
+                                Property="IsEnabled" 
+                                Value="False">
+                                <Setter 
+                                    Property="Foreground" 
+                                    Value="DimGray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-    <Window.DataContext>
-        <vm:ProductsLayoutViewModel />
-    </Window.DataContext>
-    
     <Grid>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="0.15*"/>
             <RowDefinition Height="*"/>
@@ -25,67 +71,58 @@
         <StackPanel
 			Grid.Row="0"
 			Orientation="Horizontal"
+            HorizontalAlignment="Center"
 			Margin="10">
             <TextBox 
-				FontSize="17"
-				Width="380"
-				Margin="0, 0, 5, 0"/>
-            <ComboBox 
 				FontSize="20"
-				Width="190"
+				Width="370"
+                x:Name="InputTextBox"
+				Margin="0, 0, 5, 0"
+                Style="{StaticResource MyWaterMarkStyle}" 
+                Tag="Введите для поиска"
+                TextChanged="InputTextBox_TextChanged"/>
+            <ComboBox 
+                x:Name="ComboBoxSort"
+				FontSize="20"
+				Width="180"
 				Margin="5, 0, 5, 0"
                 IsEditable="True"
                 IsReadOnly="True"
                 Text="Сортировка"
-                Padding="4"/>
+                Padding="4"
+                SelectionChanged="ComboBoxSort_SelectionChanged"/>
             <ComboBox 
+                x:Name="ComboBoxFilter"
 				FontSize="20"
-				Width="190"
+				Width="180"
 				Margin="5, 0, 0, 0"
                 IsEditable="True"
                 IsReadOnly="True"
                 Text="Фильтрация"
-                Padding="4"/>
+                Padding="4"
+                SelectionChanged="ComboBoxFilter_SelectionChanged"/>
         </StackPanel>
 
         <ListView
+            x:Name="ListView1"
 			Grid.Row="1"
             BorderBrush="White"
             HorizontalAlignment="Center"
             ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-			ItemsSource="{Binding ListBoxItems}">
+            ScrollViewer.VerticalScrollBarVisibility="Hidden">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border
 						BorderBrush="Black"
 						BorderThickness="1">
                         <Grid
-							Height="95"
+							Height="90"
                             Width="750">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="90"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="90"/>
                             </Grid.ColumnDefinitions>
-
-                            <!--
-                            <Image
-                                Grid.Column="0"
-                                Source="{Binding Image, UpdateSourceTrigger=PropertyChanged, TargetNullValue='/Resources/picture.png'}"/>
-                            -->
-
-                            <!--<Image
-                                Grid.Column="0">
-                                <Image.Source>
-                                    <Binding
-                                        Path="Image"
-                                        UpdateSourceTrigger="PropertyChanged">
-                                        <Binding.TargetNullValue>
-                                            <ImageSource>/Resources/picture.png</ImageSource>
-                                        </Binding.TargetNullValue>
-                                    </Binding>
-                                </Image.Source>
-                            </Image>-->
 
                             <StackPanel
 								Grid.Column="1"
@@ -128,9 +165,10 @@
         </ListView>
 
         <StackPanel
-			Grid.Row="2">
-
-        </StackPanel>
-
+            x:Name="StackPanelPages"
+			Grid.Row="2"
+            Margin="5"
+            Orientation="Horizontal"
+            HorizontalAlignment="Right"/>
     </Grid>
 </Window>
