@@ -55,6 +55,54 @@ namespace FinalVersion.Views
             SetButtons();
         }
 
+        // listboxitems
+        private List<ListBoxItem> GetDatabaseItems()
+        {
+            List<ListBoxItem> ListBoxItems = new List<ListBoxItem>();
+            List<Product> products = new DemEkz3Context().Products.Include(p => p.ProductType).ToList();
+
+            foreach (Product product in products)
+            {
+                ListBoxItem listBoxItem = new ListBoxItem(product.Title, product.ProductType?.Title, product.ArticleNumber, product.MinCostForAgent);
+
+                List<Material> materials = GetProductIdMaterials(product.Id);
+
+                listBoxItem.Materials = MaterialsToString(materials);
+
+                ListBoxItems.Add(listBoxItem);
+            }
+
+            return ListBoxItems;
+        }
+
+        private List<Material> GetProductIdMaterials(int product_id)
+        {
+            List<Material> materials = new List<Material>();
+            List<ProductMaterial> productMaterials = new DemEkz3Context().ProductMaterials.Include(m => m.Material).Where(p => p.ProductId == product_id).ToList();
+
+            foreach (ProductMaterial productMaterial in productMaterials)
+                materials.Add(productMaterial.Material);
+
+            return materials;
+        }
+
+        private string? MaterialsToString(List<Material> materials)
+        {
+            if (materials.Count == 0)
+                return null;
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("Материалы: ");
+
+            foreach (Material material in materials)
+                sb.Append($"{material.Title}, ");
+
+            sb.Remove(sb.Length - 2, 2);
+
+            return sb.ToString();
+        }
+
         // pages
         private int GetPageMax()
         {
@@ -147,147 +195,33 @@ namespace FinalVersion.Views
             SetPage();
         }
 
-        // listboxitems
-        private List<ListBoxItem> GetDatabaseItems()
-        {
-            List<ListBoxItem> ListBoxItems = new List<ListBoxItem>();
-            List<Product> products = new DemEkz3Context().Products.Include(p => p.ProductType).ToList();
-
-            foreach (Product product in products)
-            {
-                ListBoxItem listBoxItem = new ListBoxItem(product.Title, product.ProductType?.Title, product.ArticleNumber, product.MinCostForAgent);
-
-                List<Material> materials = GetProductIdMaterials(product.Id);
-
-                listBoxItem.Materials = MaterialsToString(materials);
-
-                ListBoxItems.Add(listBoxItem);
-            }
-
-            return ListBoxItems;
-        }
-
-        private List<Material> GetProductIdMaterials(int product_id)
-        {
-            List<Material> materials = new List<Material>();
-            List<ProductMaterial> productMaterials = new DemEkz3Context().ProductMaterials.Include(m => m.Material).Where(p => p.ProductId == product_id).ToList();
-
-            foreach (ProductMaterial productMaterial in productMaterials)
-                materials.Add(productMaterial.Material);
-
-            return materials;
-        }
-
-        private string? MaterialsToString(List<Material> materials)
-        {
-            if (materials.Count == 0)
-                return null;
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("Материалы: ");
-
-            foreach (Material material in materials)
-                sb.Append($"{material.Title}, ");
-
-            sb.Remove(sb.Length - 2, 2);
-
-            return sb.ToString();
-        }
-
-
-
-
-
-
-        // pages
-        /*private void InitializePages(List<ListBoxItem> ListBoxItems)
-        {
-            //GetPages(ListBoxItems);
-            //SetPage();
-            SetButtons();
-        }*/
-
-        /*private void GetPages(List<ListBoxItem> ?ListBoxItems)
-        {
-            CurrentPage = 0;
-
-            if(ListBoxItems == null)
-            {
-                if(AllPages != null)
-                    AllPages.Clear();
-                return;
-            }
-
-            if (AllPages != null)
-                AllPages.Clear();
-            else
-                AllPages = new List<List<ListBoxItem>>();
-
-            int element_index = 0;
-            int pages = ListBoxItems.Count / 4;
-            int last_page_elements = ListBoxItems.Count % 4;
-
-            // sets all 4-element pages
-            for(int i = 0; i < pages; i++)
-            {
-                List<ListBoxItem> page = new List<ListBoxItem>();
-
-                for (int j = 0; j < 4; j++)
-                    page.Add(ListBoxItems[element_index++]);
-
-                AllPages.Add(page);
-            }
-
-            // if there are elements left, the last page will be added
-            if(last_page_elements > 0)
-            {
-                List<ListBoxItem> page = new List<ListBoxItem>();
-
-                for (int i = 0; i < last_page_elements; i++)
-                    page.Add(ListBoxItems[element_index++]);
-
-                AllPages.Add(page);
-            }
-        }*/
-
-        /*private void SetPage()
-        {
-            if (AllPages == null || AllPages.Count == 0)
-                ListView1.ItemsSource = new List<List<ListBoxItem>>();
-            else
-                ListView1.ItemsSource = AllPages[CurrentPage];
-        }*/
-
         // search text
-        /*
         private List<ListBoxItem>? GetDatabaseItemsText(string text)
         {
-            List<ListBoxItem> ListBoxItems = GetDatabaseItems();
+            List<ListBoxItem> Items = GetDatabaseItems();
 
-            ListBoxItems = ListBoxItems
+            Items = Items
                 .Where(p => p.Title.ToLower().Contains(text.ToLower()))
                 .ToList();
 
-            if (ListBoxItems.Count == 0)
+            if (Items.Count == 0)
                 return null;
 
-            return ListBoxItems;
+            return Items;
         }
 
         private void InputTextBox_TextChanged(object sender, TextChangedEventArgs e)
-       {
-            List<ListBoxItem> ?ListBoxItems = null;
-
+        {
             if (InputTextBox.Text == "")
-                ListBoxItems = GetDatabaseItems();
+                AllItems = GetDatabaseItems();
             else
-                ListBoxItems = GetDatabaseItemsText(InputTextBox.Text);
+                AllItems = GetDatabaseItemsText(InputTextBox.Text);
 
-            //GetPages(ListBoxItems);
-            //SetPage();
+            PageNumber = 1;
+            PageMax = GetPageMax();
+            SetPage();
             SetButtons();
-        }*/
+        }
 
         // combo boxes
         private void SetComboBoxes()
@@ -307,60 +241,62 @@ namespace FinalVersion.Views
                 "Без материалов"
             };
         }
-        /*
+
         private List<ListBoxItem> GetSortItems(int sort_index)
         {
-            List<ListBoxItem> ListBoxItems = GetDatabaseItems();
+            List<ListBoxItem> Items = GetDatabaseItems();
 
             if (sort_index == 0)
-                return ListBoxItems;
+                return Items;
 
             switch (sort_index)
             {
                 case 1:
-                    ListBoxItems = ListBoxItems.OrderBy(p => p.MinCostForAgent).ToList();
+                    Items = Items.OrderBy(p => p.MinCostForAgent).ToList();
                     break;
                 case 2:
-                    ListBoxItems = ListBoxItems.OrderByDescending(p => p.MinCostForAgent).ToList();
+                    Items = Items.OrderByDescending(p => p.MinCostForAgent).ToList();
                     break;
                 case 3:
-                    ListBoxItems = ListBoxItems.OrderByDescending(p => p.Materials).ToList();
+                    Items = Items.OrderByDescending(p => p.Materials).ToList();
                     break;
                 case 4:
-                    ListBoxItems = ListBoxItems.OrderBy(p => p.Materials).ToList();
+                    Items = Items.OrderBy(p => p.Materials).ToList();
                     break;
             }
 
-            return ListBoxItems;
+            return Items;
         }
 
         private List<ListBoxItem> GetFilterItems(int filter_index)
         {
-            List<ListBoxItem> ListBoxItems = GetDatabaseItems();
+            List<ListBoxItem> Items = GetDatabaseItems();
 
             if (filter_index == 0)
-                return ListBoxItems;
+                return Items;
 
             switch (filter_index)
             {
                 case 1:
-                    ListBoxItems = ListBoxItems.Where(p => p.Materials != null).ToList();
+                    Items = Items.Where(p => p.Materials != null).ToList();
                     break;
                 case 2:
-                    ListBoxItems = ListBoxItems.Where(p => p.Materials == null).ToList();
+                    Items = Items.Where(p => p.Materials == null).ToList();
                     break;
             }
 
-            return ListBoxItems;
+            return Items;
         }
 
         private void ComboBoxSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int sort_type = ComboBoxSort.SelectedIndex;
 
-            List<ListBoxItem> ListBoxItems = GetSortItems(sort_type);
-            //GetPages(ListBoxItems);
-            //SetPage();
+            AllItems = GetSortItems(sort_type);
+
+            PageNumber = 1;
+            PageMax = GetPageMax();
+            SetPage();
             SetButtons();
         }
 
@@ -368,10 +304,12 @@ namespace FinalVersion.Views
         {
             int filter_type = ComboBoxFilter.SelectedIndex;
 
-            List<ListBoxItem> ListBoxItems = GetFilterItems(filter_type);
-            //GetPages(ListBoxItems);
-            //SetPage();
+            AllItems = GetFilterItems(filter_type);
+
+            PageNumber = 1;
+            PageMax = GetPageMax();
+            SetPage();
             SetButtons();
-        }*/
+        }
     }
 }
