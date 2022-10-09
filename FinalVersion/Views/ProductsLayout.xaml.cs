@@ -37,16 +37,114 @@ namespace FinalVersion.Views
     }
     public partial class ProductsLayout : Window
     {
-        private List<List<ListBoxItem>> ?AllPages = null;
-        private int CurrentPage = 0;
+        private List<ListBoxItem> ?AllItems = null;
+        private List<ListBoxItem> ?Page = null;
+        private int PageSize = 4;
+        private int PageNumber = 0;
+        private int PageMax = 1;
 
         public ProductsLayout()
         {
             InitializeComponent();
 
             SetComboBoxes();
-            List<ListBoxItem> ListBoxItems = GetDatabaseItems();
-            InitializePages(ListBoxItems);
+
+            AllItems = GetDatabaseItems();
+            PageMax = GetPageMax();
+            SetPage();
+            SetButtons();
+        }
+
+        // pages
+        private int GetPageMax()
+        {
+            if (AllItems == null)
+                return 1;
+
+            return (AllItems.Count / PageSize) + ((AllItems.Count % PageSize) > 0 ? 1 : 0);
+        }
+
+        private void SetPage()
+        {
+            if (AllItems == null)
+            {
+                ListView1.ItemsSource = new List<ListBoxItem>();
+                return;
+            }
+
+            Page = AllItems
+                .Skip(PageNumber * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            ListView1.ItemsSource = Page;
+        }
+
+        private void SetButtons()
+        {
+            StackPanelPages.Children.Clear();
+
+            // sets page left button
+            Button left_page = new Button();
+            left_page.Content = "<";
+            left_page.Margin = new Thickness(0, 0, 2, 0);
+            left_page.BorderBrush = new SolidColorBrush(Colors.White);
+            left_page.BorderThickness = new Thickness(0, 0, 0, 0);
+            left_page.Background = new SolidColorBrush(Colors.White);
+            left_page.Click += PageLeft_Click;
+
+            StackPanelPages.Children.Add(left_page);
+
+            // sets main numbered buttons
+            for (int i = 0; i < PageMax; i++)
+            {
+                Button number_page = new Button();
+                number_page.Content = $"{i + 1}";
+                number_page.Margin = new Thickness(2, 0, 2, 0);
+                number_page.BorderBrush = new SolidColorBrush(Colors.White);
+                number_page.BorderThickness = new Thickness(0, 0, 0, 0);
+                number_page.Background = new SolidColorBrush(Colors.White);
+                number_page.Click += SpecifiedPageButtonClick;
+
+                StackPanelPages.Children.Add(number_page);
+            }
+
+            // sets page left button
+            Button right_page = new Button();
+            right_page.Content = ">";
+            right_page.Margin = new Thickness(2, 0, 0, 0);
+            right_page.BorderBrush = new SolidColorBrush(Colors.White);
+            right_page.BorderThickness = new Thickness(0, 0, 0, 0);
+            right_page.Background = new SolidColorBrush(Colors.White);
+            right_page.Click += PageRight_Click;
+
+            StackPanelPages.Children.Add(right_page);
+        }
+
+        public void SpecifiedPageButtonClick(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+
+            PageNumber = Convert.ToInt32(button.Content) - 1;
+            SetPage();
+        }
+
+        public void PageLeft_Click(object sender, RoutedEventArgs e)
+        {
+            if (PageNumber <= 1)
+                return;
+
+            PageNumber--;
+            SetPage();
+        }
+
+        public void PageRight_Click(object sender, RoutedEventArgs e)
+        {
+            if (PageNumber >= PageMax - 1)
+                return;
+
+            PageNumber++;
+            SetPage();
         }
 
         // listboxitems
@@ -97,15 +195,20 @@ namespace FinalVersion.Views
             return sb.ToString();
         }
 
-        // pages
-        private void InitializePages(List<ListBoxItem> ListBoxItems)
-        {
-            GetPages(ListBoxItems);
-            SetPage();
-            SetButtons();
-        }
 
-        private void GetPages(List<ListBoxItem> ?ListBoxItems)
+
+
+
+
+        // pages
+        /*private void InitializePages(List<ListBoxItem> ListBoxItems)
+        {
+            //GetPages(ListBoxItems);
+            //SetPage();
+            SetButtons();
+        }*/
+
+        /*private void GetPages(List<ListBoxItem> ?ListBoxItems)
         {
             CurrentPage = 0;
 
@@ -146,86 +249,18 @@ namespace FinalVersion.Views
 
                 AllPages.Add(page);
             }
-        }
+        }*/
 
-        private void SetPage()
+        /*private void SetPage()
         {
             if (AllPages == null || AllPages.Count == 0)
                 ListView1.ItemsSource = new List<List<ListBoxItem>>();
             else
                 ListView1.ItemsSource = AllPages[CurrentPage];
-        }
-
-        private void SetButtons()
-        {
-            StackPanelPages.Children.Clear();
-
-            // sets page left button
-            Button left_page = new Button();
-            left_page.Content = "<";
-            left_page.Margin = new Thickness(0, 0, 2, 0);
-            left_page.BorderBrush = new SolidColorBrush(Colors.White);
-            left_page.BorderThickness = new Thickness(0, 0, 0, 0);
-            left_page.Background = new SolidColorBrush(Colors.White);
-            left_page.Click += PageLeft_Click;
-
-            StackPanelPages.Children.Add(left_page);
-
-            // sets main numbered buttons
-            for (int i = 0; i < AllPages.Count; i++)
-            {
-                Button number_page = new Button();
-                number_page.Content = $"{i + 1}";
-                number_page.Margin = new Thickness(2, 0, 2, 0);
-                number_page.BorderBrush = new SolidColorBrush(Colors.White);
-                number_page.BorderThickness = new Thickness(0, 0, 0, 0);
-                number_page.Background = new SolidColorBrush(Colors.White);
-                number_page.Click += SpecifiedPageButtonClick;
-
-                StackPanelPages.Children.Add(number_page);
-            }
-
-            // sets page left button
-            Button right_page = new Button();
-            right_page.Content = ">";
-            right_page.Margin = new Thickness(2, 0, 0, 0);
-            right_page.BorderBrush = new SolidColorBrush(Colors.White);
-            right_page.BorderThickness = new Thickness(0, 0, 0, 0);
-            right_page.Background = new SolidColorBrush(Colors.White);
-            right_page.Click += PageRight_Click;
-
-            StackPanelPages.Children.Add(right_page);
-        }
-
-        public void SpecifiedPageButtonClick(object sender, RoutedEventArgs e)
-        {
-            Button button = (Button)sender;
-
-            int page_number = Convert.ToInt32(button.Content);
-
-            CurrentPage = page_number - 1;
-            SetPage();
-        }
-
-        public void PageLeft_Click(object sender, RoutedEventArgs e)
-        {
-            if (CurrentPage == 0)
-                return;
-
-            CurrentPage--;
-            SetPage();
-        }
-
-        public void PageRight_Click(object sender, RoutedEventArgs e)
-        {
-            if (CurrentPage == (AllPages.Count - 1))
-                return;
-
-            CurrentPage++;
-            SetPage();
-        }
+        }*/
 
         // search text
+        /*
         private List<ListBoxItem>? GetDatabaseItemsText(string text)
         {
             List<ListBoxItem> ListBoxItems = GetDatabaseItems();
@@ -249,10 +284,10 @@ namespace FinalVersion.Views
             else
                 ListBoxItems = GetDatabaseItemsText(InputTextBox.Text);
 
-            GetPages(ListBoxItems);
-            SetPage();
+            //GetPages(ListBoxItems);
+            //SetPage();
             SetButtons();
-        }
+        }*/
 
         // combo boxes
         private void SetComboBoxes()
@@ -272,7 +307,7 @@ namespace FinalVersion.Views
                 "Без материалов"
             };
         }
-
+        /*
         private List<ListBoxItem> GetSortItems(int sort_index)
         {
             List<ListBoxItem> ListBoxItems = GetDatabaseItems();
@@ -324,8 +359,8 @@ namespace FinalVersion.Views
             int sort_type = ComboBoxSort.SelectedIndex;
 
             List<ListBoxItem> ListBoxItems = GetSortItems(sort_type);
-            GetPages(ListBoxItems);
-            SetPage();
+            //GetPages(ListBoxItems);
+            //SetPage();
             SetButtons();
         }
 
@@ -334,9 +369,9 @@ namespace FinalVersion.Views
             int filter_type = ComboBoxFilter.SelectedIndex;
 
             List<ListBoxItem> ListBoxItems = GetFilterItems(filter_type);
-            GetPages(ListBoxItems);
-            SetPage();
+            //GetPages(ListBoxItems);
+            //SetPage();
             SetButtons();
-        }
+        }*/
     }
 }
