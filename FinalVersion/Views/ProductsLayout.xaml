@@ -119,10 +119,20 @@
 							Height="90"
                             Width="750">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="90"/>
                             </Grid.ColumnDefinitions>
+
+                            <!-- 
+                            really, it works:
+                            
+                            Source="..\..\Resources\picture.png"
+                            -->
+                            <Image
+                                Grid.Column="0"
+                                Margin="5, 0, 5, 0"
+                                Source="{Binding Image}"/>
 
                             <StackPanel
 								Grid.Column="1"
@@ -167,7 +177,7 @@
         <StackPanel
             x:Name="StackPanelPages"
 			Grid.Row="2"
-            Margin="5"
+            Margin="5, 5, 15, 5"
             Orientation="Horizontal"
             HorizontalAlignment="Right"/>
     </Grid>

@@ -26,6 +26,7 @@ namespace FinalVersion.Views
         public string ArticleNumber { get; set; }
         public string? Materials { get; set; } = null;
         public decimal MinCostForAgent { get; set; }
+        public ImageSource Image { get; set; }
 
         public ListBoxItem(string title, string? type, string article, decimal cost)
         {
@@ -58,21 +59,26 @@ namespace FinalVersion.Views
         // listboxitems
         private List<ListBoxItem> GetDatabaseItems()
         {
-            List<ListBoxItem> ListBoxItems = new List<ListBoxItem>();
-            List<Product> products = new DemEkz3Context().Products.Include(p => p.ProductType).ToList();
+            List<ListBoxItem> Items = new List<ListBoxItem>();
+            List<Product> products = new DemEkz3Context().Products
+                .Include(p => p.ProductType)
+                .ToList();
 
             foreach (Product product in products)
             {
-                ListBoxItem listBoxItem = new ListBoxItem(product.Title, product.ProductType?.Title, product.ArticleNumber, product.MinCostForAgent);
+                ListBoxItem listBoxItem = new ListBoxItem(
+                    product.Title, 
+                    product.ProductType?.Title, 
+                    product.ArticleNumber, 
+                    product.MinCostForAgent);
 
-                List<Material> materials = GetProductIdMaterials(product.Id);
+                listBoxItem.Materials = MaterialsToString(GetProductIdMaterials(product.Id));
+                listBoxItem.Image = GetImageSource(product.Image);
 
-                listBoxItem.Materials = MaterialsToString(materials);
-
-                ListBoxItems.Add(listBoxItem);
+                Items.Add(listBoxItem);
             }
 
-            return ListBoxItems;
+            return Items;
         }
 
         private List<Material> GetProductIdMaterials(int product_id)
@@ -101,6 +107,14 @@ namespace FinalVersion.Views
             sb.Remove(sb.Length - 2, 2);
 
             return sb.ToString();
+        }
+
+        private ImageSource GetImageSource(string ?ImagePath)
+        {
+            if (ImagePath == null)
+                return new BitmapImage(new Uri("/FinalVersion;component/Resources/picture.png", UriKind.Relative));
+
+            return new BitmapImage(new Uri("/FinalVersion;component/" + ImagePath, UriKind.Relative));
         }
 
         // pages
